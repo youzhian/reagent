@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:include="include::head('试剂管理列表页')">
+    <meta charset="UTF-8"/>
+    <title>试剂列表页</title>
+</head>
+<body>
+<div id="app">
+    <el-form :inline="true" :model="formInline" class="demo-form-inline">
+        <el-form-item label="试剂名称">
+            <el-input v-model="formInline.reagentName" placeholder="试剂名称"></el-input>
+        </el-form-item>
+        <el-form-item label="录入人">
+            <el-input v-model="formInline.createBy" placeholder="录入人"></el-input>
+        </el-form-item>
+        <el-form-item label="状态">
+            <el-select v-model="formInline.delFlg" placeholder="状态">
+                <el-option label="全部" value=""></el-option>
+                <el-option label="正常" value="1"></el-option>
+                <el-option label="删除" value="0"></el-option>
+            </el-select>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="search">查询</el-button>
+        </el-form-item>
+    </el-form>
+    <el-row>
+        <el-button type="primary" @click="toAdd" icon="el-icon-plus">新增</el-button>
+    </el-row>
+    <el-table
+            :data="tableData"
+            stripe
+            border
+            style="width: 100%"
+            >
+        <el-table-column
+                width="50px"
+                align="center"
+                label="序号"
+                type="index"
+                :index="indexMethod">
+        </el-table-column>
+        <el-table-column
+                label="试剂名称"
+                prop="reagentName">
+        </el-table-column>
+        <el-table-column
+                label="描述"
+                prop="remark">
+        </el-table-column>
+        <el-table-column
+                label="状态"
+                prop="delFlg">
+        </el-table-column>
+        <el-table-column
+                label="创建时间"
+                prop="createOn">
+        </el-table-column>
+        <el-table-column
+                label="创建人"
+                prop="createBy">
+        </el-table-column>
+        <el-table-column
+                label="修改时间"
+                prop="modifyOn">
+        </el-table-column>
+        <el-table-column
+                label="修改人"
+                prop="modifyBy">
+        </el-table-column>
+        <el-table-column
+                label="操作">
+
+            <template slot-scope="scope">
+                <el-button
+                        size="mini"
+                        @click="handleEdit(scope.$index, scope.row)" icon="el-icon-edit">编辑</el-button>
+                <el-button
+                        size="mini"
+                        type="danger"
+                        @click="handleDelete(scope.$index, scope.row)" icon="el-icon-delete">删除</el-button>
+            </template>
+        </el-table-column>
+    </el-table>
+    <!--新增/编辑弹框-->
+    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible">
+        <el-form :model="dialogData">
+            <el-form-item label="试剂名称" :label-width="formLabelWidth">
+                <el-input v-model="dialogData.reagentName" autocomplete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="描述" :label-width="formLabelWidth">
+                <el-input type="textarea" v-model="dialogData.remark"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogCancel">取 消</el-button>
+            <el-button type="primary" @click="dialogSubmit">提 交</el-button>
+        </div>
+    </el-dialog>
+</div>
+</body>
+<script th:inline="javascript">
+
+    var ctp= /*[[@{/}]]*/ "/";
+    axios.defaults.headers.post['Content-Type'] = 'application/json'
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                formInline: {
+                    user: '',
+                    region: ''
+                },
+                tableData: [],
+                dialogFormVisible: false,
+                dialogTitle: '',
+                formLabelWidth: '120px',
+                dialogData: {
+                    id:'',
+                    reagentName:'',
+                    remark:'',
+                },
+            }
+        },
+        created: function(){
+            console.log("created执行")
+        },
+        methods: {
+            handleEdit(index, row) {
+                console.log(index, row);
+            },
+            handleDelete(index, row) {
+                console.log(index, row);
+            },
+            indexMethod(index){
+
+                return index+1;
+            },
+            //打开新增页面
+            toAdd(){
+                let that = this;
+                that.dialogFormVisible=true;
+                that.dialogTitle = "新增试剂信息";
+            },
+            search(){
+                let that = this;
+            },
+            //弹出框提交按钮
+            dialogSubmit(){
+                let that = this;
+                that.$confirm('确定要提交本次修改吗?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    axios.post
+                    axios.post(ctp+"/reagent/save",{reagentName:"aaa",remark:"ddd"})
+                        .then((response)=>{
+                            let code = response.data.code;
+                            if(code == "200"){
+                                that.dialogFormVisible = false
+                                that.$message({
+                                    type: 'success',
+                                    message: '提交成功!'
+                                });
+                            }else{
+                                let msg = response.data.msg;
+                                that.$message({
+                                    type: 'error',
+                                    message: msg
+                                });
+                            }
+                        })
+                        .catch((error)=>{
+                            that.$message({
+                                type: 'error',
+                                message: error
+                            });
+                        })
+
+                }).catch((error) => {
+                    that.$message({
+                        type: 'info',
+                        message: error
+                    });
+                });
+
+            },
+            //弹出框取消按钮
+            dialogCancel(){
+                let that = this;
+                that.dialogFormVisible = false
+            },
+        },
+    });
+</script>
+</html>

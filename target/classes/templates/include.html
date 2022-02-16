@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8"/>
+    <!-- import CSS -->
+    <link rel="stylesheet" th:href="@{/css/element-2.15.6.css}">
+    <!-- import Vue before Element -->
+    <script th:src="@{/js/vue.js}"></script>
+    <script th:src="@{/js/axios.min.js}"></script>
+    <!-- import JavaScript -->
+    <script th:src="@{/js/element-2.15.6.js}"></script>
+    <title th:text="${title}">欢迎</title>
+</head>
+<body>
+
+</body>
+</html>
