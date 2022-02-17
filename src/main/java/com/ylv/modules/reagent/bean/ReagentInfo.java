@@ -1,15 +1,16 @@
 package com.ylv.modules.reagent.bean;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Date;
 
 @Data
 @Entity
+@Table(name = "REAGENT_INFO")
+@JsonIgnoreProperties({"handler","hibernateLazyInitializer"})
 public class ReagentInfo {
 
     @Id
@@ -30,6 +31,7 @@ public class ReagentInfo {
     /**
      * 数据创建时间
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date createOn;
     /**
      * 数据创建人
@@ -38,6 +40,7 @@ public class ReagentInfo {
     /**
      * 数据修改时间
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date modifyOn;
     /**
      * 数据修改人

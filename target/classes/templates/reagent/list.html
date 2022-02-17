@@ -6,17 +6,17 @@
 </head>
 <body>
 <div id="app">
-    <el-form :inline="true" :model="formInline" class="demo-form-inline">
+    <el-form :inline="true" :model="queryForm" class="demo-form-inline">
         <el-form-item label="试剂名称">
-            <el-input v-model="formInline.reagentName" placeholder="试剂名称"></el-input>
+            <el-input v-model="queryForm.reagentName" placeholder="试剂名称"></el-input>
         </el-form-item>
         <el-form-item label="录入人">
-            <el-input v-model="formInline.createBy" placeholder="录入人"></el-input>
+            <el-input v-model="queryForm.createBy" placeholder="录入人"></el-input>
         </el-form-item>
         <el-form-item label="状态">
-            <el-select v-model="formInline.delFlg" placeholder="状态">
+            <el-select v-model="queryForm.delFlg" placeholder="状态">
                 <el-option label="全部" value=""></el-option>
-                <el-option label="正常" value="1"></el-option>
+                <el-option label="正常" value="1" selected></el-option>
                 <el-option label="删除" value="0"></el-option>
             </el-select>
         </el-form-item>
@@ -50,7 +50,8 @@
         </el-table-column>
         <el-table-column
                 label="状态"
-                prop="delFlg">
+                prop="delFlg"
+                :formatter="formatDelFlg">
         </el-table-column>
         <el-table-column
                 label="创建时间"
@@ -74,21 +75,21 @@
             <template slot-scope="scope">
                 <el-button
                         size="mini"
-                        @click="handleEdit(scope.$index, scope.row)" icon="el-icon-edit">编辑</el-button>
+                        @click="toEdit(scope.$index, scope.row)" icon="el-icon-edit">编辑</el-button>
                 <el-button
                         size="mini"
                         type="danger"
-                        @click="handleDelete(scope.$index, scope.row)" icon="el-icon-delete">删除</el-button>
+                        @click="toDelete(scope.$index, scope.row)" icon="el-icon-delete">删除</el-button>
             </template>
         </el-table-column>
     </el-table>
     <!--新增/编辑弹框-->
-    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible">
-        <el-form :model="dialogData">
-            <el-form-item label="试剂名称" :label-width="formLabelWidth">
+    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" @close="dialogClose">
+        <el-form :model="dialogData" ref="forms" :rules="rules">
+            <el-form-item label="试剂名称" :label-width="formLabelWidth" prop="reagentName">
                 <el-input v-model="dialogData.reagentName" autocomplete="off"></el-input>
             </el-form-item>
-            <el-form-item label="描述" :label-width="formLabelWidth">
+            <el-form-item label="描述" :label-width="formLabelWidth" prop="remark">
                 <el-input type="textarea" v-model="dialogData.remark"></el-input>
             </el-form-item>
         </el-form>
@@ -102,14 +103,14 @@
 <script th:inline="javascript">
 
     var ctp= /*[[@{/}]]*/ "/";
-    axios.defaults.headers.post['Content-Type'] = 'application/json'
     new Vue({
         el: '#app',
         data: function () {
             return {
-                formInline: {
-                    user: '',
-                    region: ''
+                queryForm: {
+                    reagentName: '',
+                    delFlg: '1',
+                    createBy:'',
                 },
                 tableData: [],
                 dialogFormVisible: false,
@@ -120,17 +121,61 @@
                     reagentName:'',
                     remark:'',
                 },
+                rules:{
+                  reagentName:[{required: true, message: '请输入试剂名', trigger: 'blur'}]
+                },
+                delFlg:{"0":"已删除","1":"正常"}
             }
         },
         created: function(){
             console.log("created执行")
+            this.search();
         },
         methods: {
-            handleEdit(index, row) {
+            toEdit(index, row) {
                 console.log(index, row);
+                let that = this;
+                that.dialogFormVisible=true;
+                that.dialogTitle = "编辑试剂信息";
+
+                that.dialogData.id=row.id;
+                that.dialogData.reagentName = row.reagentName;
+                that.dialogData.remark = row.remark;
             },
-            handleDelete(index, row) {
+            toDelete(index, row) {
                 console.log(index, row);
+                let that = this;
+                that.$confirm('确定要删除吗?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(()=>{
+                    axios.get(ctp+"reagent/delete/"+row.id)
+                        .then((response)=>{
+                            let code = response.data.code;
+                            if(code == "200"){
+                                that.$message({
+                                    type: 'success',
+                                    message: '删除成功!'
+                                });
+
+                            }else{
+                                let msg = response.data.msg;
+                                that.$message({
+                                    type: 'error',
+                                    message: '删除失败!'
+                                });
+                            }
+                            //刷新列表
+                            that.search();
+                        }).catch((error)=>{
+                        let msg = response.data.msg;
+                        that.$message({
+                            type: 'error',
+                            message: '删除失败!:'+error
+                        });
+                    });
+                });
             },
             indexMethod(index){
 
@@ -144,17 +189,44 @@
             },
             search(){
                 let that = this;
+                axios.post(ctp+"reagent/query",that.queryForm).then((response)=>{
+                    let code = response.data.code;
+                    if(code == "200"){
+                        that.tableData = response.data.data;
+                    }else{
+                        let msg = response.data.msg
+                        that.$message({
+                            type: 'error',
+                            message: '查询异常！:'+msg
+                        });
+                    }
+                }).catch((error)=>{
+                    that.$message({
+                        type: 'error',
+                        message: '查询异常！:'+error
+                    });
+                })
             },
             //弹出框提交按钮
             dialogSubmit(){
                 let that = this;
+                let valResult = false;
+                that.$refs["forms"].validate((valid)=>{
+                    if(valid){
+                        valResult =  true;
+                    }
+                });
+                if(!valResult){
+                    console.log(valResult);
+                    return;
+                }
                 that.$confirm('确定要提交本次修改吗?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
-                    axios.post
-                    axios.post(ctp+"/reagent/save",{reagentName:"aaa",remark:"ddd"})
+                    //axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+                    axios.post(ctp+"reagent/save",that.dialogData)
                         .then((response)=>{
                             let code = response.data.code;
                             if(code == "200"){
@@ -170,12 +242,16 @@
                                     message: msg
                                 });
                             }
+                            //刷新
+                            that.search();
                         })
                         .catch((error)=>{
                             that.$message({
                                 type: 'error',
                                 message: error
                             });
+                            //刷新
+                            that.search();
                         })
 
                 }).catch((error) => {
@@ -190,6 +266,18 @@
             dialogCancel(){
                 let that = this;
                 that.dialogFormVisible = false
+                that.$refs["forms"].resetFields();
+            },
+            dialogClose(){
+                let that = this;
+                that.$refs["forms"].resetFields();
+            },
+            formatDelFlg(row,column,cellValue){
+                let text = this.delFlg[cellValue];
+                if(!text){
+                    text = "-";
+                }
+                return text;
             },
         },
     });

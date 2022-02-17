@@ -4,6 +4,11 @@ import com.ylv.util.ResponseUtil;
 
 public class BaseController {
 
+
+    protected String getCurrentUserName(){
+        return "admin";
+    }
+
     protected ResponseUtil success(){
         return success(null);
     }
