@@ -1,37 +1,38 @@
 package com.ylv.modules.reagent.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ylv.modules.reagent.bean.ReagentInfo;
-import com.ylv.modules.reagent.repository.ReagentInfoRepository;
+import com.ylv.modules.reagent.mapper.ReagentInfoMapper;
 import com.ylv.modules.reagent.service.ReagentInfoService;
 import com.ylv.util.Constants;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 
 @Service
-public class ReagentInfoServiceImpl implements ReagentInfoService {
+public class ReagentInfoServiceImpl extends ServiceImpl<ReagentInfoMapper,ReagentInfo> implements ReagentInfoService {
 
-    @Autowired
-    private ReagentInfoRepository reagentInfoRepository;
+    @Resource
+    private ReagentInfoMapper reagentInfoMapper;
 
     @Override
-    public boolean checkExists(Long id, String reagentName) {
+    public boolean checkExists(Integer id, String reagentName) {
         int count = 0;
+        QueryWrapper<ReagentInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(ReagentInfo::getReagentName,reagentName);
         if(id != null){
-            count = reagentInfoRepository.countByReagentNameEqualsAndIdIsNot(reagentName,id);
-        }else{
-            count = reagentInfoRepository.countByReagentName(reagentName);
+            queryWrapper.lambda().ne(ReagentInfo::getId,id);
         }
+        count = reagentInfoMapper.selectCount(queryWrapper);
         return count > 0;
     }
 
     @Override
-    public Long addOrUpdate(ReagentInfo reagentInfo,String userName) {
+    public Integer addOrUpdate(ReagentInfo reagentInfo,String userName) {
         if(reagentInfo != null) {
             boolean checkResult = checkExists(reagentInfo.getId(), reagentInfo.getReagentName());
             if (!checkResult) {
@@ -45,11 +46,9 @@ public class ReagentInfoServiceImpl implements ReagentInfoService {
 
                 reagentInfo.setModifyOn(curr);
                 reagentInfo.setModifyBy(userName);
+                saveOrUpdate(reagentInfo);
 
-                ReagentInfo result  = reagentInfoRepository.saveAndFlush(reagentInfo);
-                if(result != null){
-                    return result.getId();
-                }
+                return reagentInfo.getId();
             }
         }
         return null;
@@ -58,35 +57,33 @@ public class ReagentInfoServiceImpl implements ReagentInfoService {
     @Override
     public List<ReagentInfo> list(ReagentInfo reagentInfo) {
 
-        ReagentInfo query = new ReagentInfo();
+        QueryWrapper<ReagentInfo> query = new QueryWrapper();
 
         if(StringUtils.isNotBlank(reagentInfo.getReagentName())) {
-            query.setReagentName(reagentInfo.getReagentName());
+            query.lambda().like(ReagentInfo::getReagentName,reagentInfo.getReagentName());
         }
         if(StringUtils.isNotBlank(reagentInfo.getDelFlg())) {
-            query.setDelFlg(reagentInfo.getDelFlg());
+            query.lambda().eq(ReagentInfo::getDelFlg,reagentInfo.getDelFlg());
         }
         if(StringUtils.isNotBlank(reagentInfo.getCreateBy())) {
-            query.setCreateBy(reagentInfo.getCreateBy());
+            query.lambda().eq(ReagentInfo::getCreateBy,reagentInfo.getCreateBy());
         }
         if(StringUtils.isNotBlank(reagentInfo.getModifyBy())) {
-            query.setModifyBy(reagentInfo.getModifyBy());
+            query.lambda().eq(ReagentInfo::getModifyBy,reagentInfo.getModifyBy());
         }
 
-        ExampleMatcher matcher = ExampleMatcher.matching()
-                .withMatcher("reagentName",ExampleMatcher.GenericPropertyMatchers.contains());
+        query.lambda().orderByDesc(ReagentInfo::getDelFlg).orderByAsc(ReagentInfo::getOrderNum).orderByDesc(ReagentInfo::getModifyOn);
 
-        Example<ReagentInfo> example = Example.of(query,matcher);
-        List<ReagentInfo> list = reagentInfoRepository.findAll(example);
+        List<ReagentInfo> list = reagentInfoMapper.selectList(query);
         return list;
     }
 
     @Override
-    public boolean logicalDeleteBy(Long id) {
+    public boolean logicalDeleteBy(Integer id) {
         ReagentInfo s = new ReagentInfo();
         s.setId(id);
         s.setDelFlg(Constants.DEL_FLG_DELETE);
-        reagentInfoRepository.save(s);
-        return false;
+        int r = reagentInfoMapper.updateById(s);
+        return r>0;
     }
 }

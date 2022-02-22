@@ -10,6 +10,8 @@
     <properties>
         <java.version>1.8</java.version>
         <lombok.version>1.18.4</lombok.version>
+        <mybatisplus.version>3.4.1</mybatisplus.version>
+        <mybatisplus.generator.version>3.4.1</mybatisplus.generator.version>
     </properties>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -34,8 +36,22 @@
             <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>${mybatisplus.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-generator</artifactId>
+            <version>${mybatisplus.generator.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

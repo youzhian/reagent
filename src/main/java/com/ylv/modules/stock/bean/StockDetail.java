@@ -1,24 +1,23 @@
 package com.ylv.modules.stock.bean;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Date;
 
 @Data
-@Entity
+@Table(name = "STOCK_DETAIL")
 public class StockDetail {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    @TableId(value = "id",type = IdType.AUTO)
+    private Integer id;
     /**
      * 试剂ID
      */
-    private Long reagentId;
+    private Integer reagentId;
     /**
      * 试剂名称
      */
@@ -42,5 +41,6 @@ public class StockDetail {
     /**
      * 出入库时间
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date createTime;
 }

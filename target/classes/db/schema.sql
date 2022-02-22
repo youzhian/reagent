@@ -12,6 +12,7 @@ CREATE TABLE `reagent_info`  (
   `reagent_name` varchar(255) NOT NULL COMMENT '试剂名称',
   `del_flg` varchar(10) NULL DEFAULT 1 COMMENT '删除标识，0为已删除，1为未删除',
   `remark` varchar(255) NULL COMMENT '描述',
+  `order_num` int NULL DEFAULT NULL COMMENT '排序',
   `create_on` timestamp(6) NULL DEFAULT CURRENT_TIMESTAMP() COMMENT '创建时间',
   `create_by` varchar(100) NULL COMMENT '创建人名称',
   `modify_on` timestamp(6) NULL COMMENT '修改时间',

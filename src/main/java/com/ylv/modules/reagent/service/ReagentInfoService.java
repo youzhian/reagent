@@ -1,17 +1,18 @@
 package com.ylv.modules.reagent.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.ylv.modules.reagent.bean.ReagentInfo;
 
 import java.util.List;
 
-public interface ReagentInfoService {
+public interface ReagentInfoService extends IService<ReagentInfo> {
     /**
      * 检查试剂名称是否已重复，若重复返回true
      * @param id 更新时数据的ID
      * @param reagentName 试剂名称
      * @return 重复则返回true
      */
-    public boolean checkExists(Long id,String reagentName);
+    public boolean checkExists(Integer id,String reagentName);
 
     /**
      * 新增或保存试剂信息
@@ -19,7 +20,7 @@ public interface ReagentInfoService {
      * @param userName 操作人的ID
      * @return
      */
-    public Long addOrUpdate(ReagentInfo reagentInfo,String userName);
+    public Integer addOrUpdate(ReagentInfo reagentInfo,String userName);
 
     /**
      * 根据条件查询试剂信息
@@ -33,6 +34,6 @@ public interface ReagentInfoService {
      * @param id
      * @return
      */
-    public boolean  logicalDeleteBy(Long id);
+    public boolean  logicalDeleteBy(Integer id);
 
 }

@@ -1,4 +1,7 @@
 package com.ylv.modules.user.service;
 
-public interface UserInfoService {
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.ylv.modules.user.bean.UserInfo;
+
+public interface UserInfoService extends IService<UserInfo> {
 }

@@ -1,21 +1,19 @@
 package com.ylv.modules.reagent.bean;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
 
 @Data
-@Entity
 @Table(name = "REAGENT_INFO")
-@JsonIgnoreProperties({"handler","hibernateLazyInitializer"})
 public class ReagentInfo {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    @TableId(value = "id",type = IdType.AUTO)
+    private Integer id;
     /**
      * 试剂名称
      */
@@ -24,6 +22,12 @@ public class ReagentInfo {
      * 删除标识，0为已删除，1为未删除
      */
     private String delFlg;
+
+    /**
+     * 排序字段
+     */
+    private Integer orderNum;
+
     /**
      * 描述
      */

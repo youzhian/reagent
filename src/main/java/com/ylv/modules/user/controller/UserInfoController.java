@@ -1,12 +1,14 @@
 package com.ylv.modules.user.controller;
 
 import com.ylv.modules.user.bean.UserInfo;
-import com.ylv.modules.user.repository.UserInfoRepository;
+import com.ylv.modules.user.mapper.UserInfoMapper;
+import com.ylv.modules.user.service.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 
@@ -14,17 +16,17 @@ import java.util.List;
 @RequestMapping("user")
 public class UserInfoController {
 
-    @Autowired
-    private UserInfoRepository userInfoRepository;
+    @Resource
+    private UserInfoService userInfoService;
 
     @GetMapping("/list")
     public List<UserInfo> findAll(){
-        return userInfoRepository.findAll();
+        return userInfoService.list();
     }
 
     @PostMapping("save")
     public Boolean save(@RequestBody UserInfo userInfo){
-        userInfoRepository.save(userInfo);
+        userInfoService.saveOrUpdate(userInfo);
         return Boolean.TRUE;
     }
 
