@@ -14,7 +14,7 @@
     </el-card>
     <el-card shadow="always">
         <el-tabs tab-position="top"  v-model="activeName" @tab-click="tabClick">
-            <el-tab-pane v-for="(r,i) in reagents" :key="r.reagentId" :name="r.reagentId+''">
+            <el-tab-pane v-for="(r,i) in reagents" :key="r.reagentId" :name="r.reagentId+''" :label="r.reagentName">
                 <span slot="label">{{r.reagentName}}  <el-badge :value="r.stock" :max="100" style="margin-top: 10px;"></el-badge></span>
                 <el-row v-if="activeName==r.reagentId+''">
                     <el-form :inline="true" :model="queryForm" class="demo-form-inline">
@@ -30,6 +30,9 @@
                         </el-form-item>
                     </el-form>
 
+                </el-row>
+                <el-row>
+                    <el-button type="primary" @click="toAdd" icon="el-icon-plus">新增</el-button>
                 </el-row>
                 <el-card shadow="always">
                     <el-table
@@ -134,10 +137,17 @@
                 })
             },
             tabClick:function(e){
-                console.log("tabClick",e)
+                console.log(e)
+                console.log(e.name)
+                console.log("activeName",this.activeName)
+                let that = this;
+
             },
             formatStockType:function(row,column,cellValue){
                 return '';
+            },
+            toAdd:function(){
+
             },
             toDelete:function(index, row){
 
