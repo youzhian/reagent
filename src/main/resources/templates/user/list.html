@@ -1,115 +1,74 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:include="include::head('试剂管理列表页')">
+<head th:include="include::head('用户管理')">
     <meta charset="UTF-8"/>
-    <title>试剂列表页</title>
+    <title>用户列表页</title>
 </head>
 <body>
 <div id="app">
     <el-card shadow="always">
-    <el-form :inline="true" :model="queryForm" class="demo-form-inline">
-        <el-form-item label="试剂名称">
-            <el-input v-model="queryForm.reagentName" placeholder="试剂名称"></el-input>
-        </el-form-item>
-        <el-form-item label="录入人">
-            <el-input v-model="queryForm.createBy" placeholder="录入人"></el-input>
-        </el-form-item>
-        <el-form-item label="状态">
-            <el-select v-model="queryForm.delFlg" placeholder="状态">
-                <el-option label="全部" value=""></el-option>
-                <el-option label="正常" value="1" selected></el-option>
-                <el-option label="删除" value="0"></el-option>
-            </el-select>
-        </el-form-item>
-        <el-form-item>
-            <el-button type="primary" @click="search">查询</el-button>
-        </el-form-item>
-    </el-form>
-    <el-row>
-        <el-button type="primary" @click="toAdd" icon="el-icon-plus">新增</el-button>
-    </el-row>
-    <el-table
-            :data="tableData"
-            stripe
-            border
-            style="width: 100%"
-            >
-        <el-table-column
-                width="50px"
-                align="center"
-                label="序号"
-                type="index"
-                :index="indexMethod">
-        </el-table-column>
-        <el-table-column
-                label="试剂名称"
-                prop="reagentName">
-        </el-table-column>
-        <el-table-column
-                label="描述"
-                prop="remark">
-        </el-table-column>
-        <el-table-column
-                label="状态"
-                prop="delFlg"
-                :formatter="formatDelFlg">
-        </el-table-column>
-        <el-table-column
-                label="排序值"
-                prop="orderNum">
-        </el-table-column>
-        <el-table-column
-                label="创建时间"
-                prop="createOn">
-        </el-table-column>
-        <el-table-column
-                label="创建人"
-                prop="createBy">
-        </el-table-column>
-        <el-table-column
-                label="修改时间"
-                prop="modifyOn">
-        </el-table-column>
-        <el-table-column
-                label="修改人"
-                prop="modifyBy">
-        </el-table-column>
-        <el-table-column
-                label="操作" width="200px">
-
-            <template slot-scope="scope">
-                <el-button
-                        size="mini"
-                        @click="toEdit(scope.$index, scope.row)" icon="el-icon-edit">编辑</el-button>
-                <el-button v-if="scope.row.delFlg == '1'"
-                        size="mini"
-                        type="danger"
-                        @click="toDelete(scope.$index, scope.row)" icon="el-icon-delete">删除</el-button>
-                <el-button v-if="scope.row.delFlg != '1'"
-                           size="mini"
-                           type="warning"
-                           @click="toRecovery(scope.$index, scope.row)" icon="el-icon-refresh-left">恢复</el-button>
-            </template>
-        </el-table-column>
-    </el-table>
-    <!--新增/编辑弹框-->
-    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" @close="dialogClose">
-        <el-form :model="dialogData" ref="forms" :rules="rules">
-            <el-form-item label="试剂名称" :label-width="formLabelWidth" prop="reagentName">
-                <el-input v-model="dialogData.reagentName" autocomplete="off"></el-input>
+        <el-form :inline="true" :model="queryForm" class="demo-form-inline">
+            <el-form-item label="用户名称">
+                <el-input v-model="queryForm.name" placeholder="用户名称"></el-input>
             </el-form-item>
-            <el-form-item label="排序值" :label-width="formLabelWidth" prop="orderNum">
-                <el-input-number v-model="dialogData.orderNum" :min="1" :max="1000" label="排序值"></el-input-number>
-            </el-form-item>
-            <el-form-item label="描述" :label-width="formLabelWidth" prop="remark">
-                <el-input type="textarea" v-model="dialogData.remark"></el-input>
+            <el-form-item>
+                <el-button type="primary" @click="search">查询</el-button>
             </el-form-item>
         </el-form>
-        <div slot="footer" class="dialog-footer">
-            <el-button @click="dialogCancel">取 消</el-button>
-            <el-button type="primary" @click="dialogSubmit">提 交</el-button>
-        </div>
-    </el-dialog>
+        <el-row>
+            <el-button type="primary" @click="toAdd" icon="el-icon-plus">新增</el-button>
+        </el-row>
+        <el-table
+                :data="tableData"
+                stripe
+                border
+                style="width: 100%">
+            <el-table-column
+                    width="50px"
+                    align="center"
+                    label="序号"
+                    type="index"
+                    :index="indexMethod">
+            </el-table-column>
+            <el-table-column
+                    label="用户名"
+                    prop="name">
+            </el-table-column>
+            <el-table-column
+                    label="状态"
+                    prop="delFlg"
+                    :formatter="formatDelFlg">
+            </el-table-column>
+            <el-table-column
+                    label="操作" width="200px">
+
+                <template slot-scope="scope">
+                    <el-button
+                            size="mini"
+                            @click="toEdit(scope.$index, scope.row)" icon="el-icon-edit">编辑</el-button>
+                    <el-button v-if="scope.row.delFlg == '1'"
+                               size="mini"
+                               type="danger"
+                               @click="toDelete(scope.$index, scope.row)" icon="el-icon-delete">删除</el-button>
+                    <el-button v-if="scope.row.delFlg != '1'"
+                               size="mini"
+                               type="warning"
+                               @click="toRecovery(scope.$index, scope.row)" icon="el-icon-refresh-left">恢复</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+        <!--新增/编辑弹框-->
+        <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" @close="dialogClose">
+            <el-form :model="dialogData" ref="forms" :rules="rules">
+                <el-form-item label="用户名称" :label-width="formLabelWidth" prop="name">
+                    <el-input v-model="dialogData.name" autocomplete="off"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogCancel">取 消</el-button>
+                <el-button type="primary" @click="dialogSubmit">提 交</el-button>
+            </div>
+        </el-dialog>
     </el-card>
 </div>
 </body>
@@ -121,9 +80,7 @@
         data: function () {
             return {
                 queryForm: {
-                    reagentName: '',
-                    delFlg: '1',
-                    createBy:'',
+                    name: '',
                 },
                 tableData: [],
                 dialogFormVisible: false,
@@ -131,14 +88,13 @@
                 formLabelWidth: '120px',
                 dialogData: {
                     id:'',
-                    reagentName:'',
-                    orderNum:'',
-                    remark:'',
+                    name:'',
+                    delFlg:'',
                 },
                 rules:{
-                  reagentName:[{required: true, message: '请输入试剂名', trigger: 'blur'}]
+                    name:[{required: true, message: '请输入用户名', trigger: 'blur'}]
                 },
-                delFlg:{"0":"已删除","1":"正常"}
+                delFlg:{"0":"已删除","1":"正常"},
             }
         },
         created: function(){
@@ -146,6 +102,11 @@
             this.search();
         },
         methods: {
+
+            indexMethod:function(index){
+
+                return index+1;
+            },
             toEdit(index, row) {
                 console.log(index, row);
                 let that = this;
@@ -217,16 +178,12 @@
                             //刷新列表
                             that.search();
                         }).catch((error)=>{
-                            that.$message({
-                                type: 'error',
-                                message: '恢复失败!:'+error
-                            });
+                        that.$message({
+                            type: 'error',
+                            message: '恢复失败!:'+error
+                        });
                     });
                 });
-            },
-            indexMethod: function(index){
-
-                return index+1;
             },
             //打开新增页面
             toAdd(){
@@ -243,7 +200,7 @@
             },
             search(){
                 let that = this;
-                axios.post(ctp+"reagent/query",that.queryForm).then((response)=>{
+                axios.post(ctp+"user/query",that.queryForm).then((response)=>{
                     let code = response.data.code;
                     if(code == "200"){
                         that.tableData = response.data.data;
@@ -279,7 +236,7 @@
                     type: 'warning'
                 }).then(() => {
                     console.log(that.dialogData)
-                    axios.post(ctp+"reagent/save",that.dialogData)
+                    axios.post(ctp+"user/save",that.dialogData)
                         .then((response)=>{
                             let code = response.data.code;
                             if(code == "200"){

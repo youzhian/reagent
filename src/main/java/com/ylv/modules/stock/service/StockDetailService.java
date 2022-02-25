@@ -12,4 +12,11 @@ public interface StockDetailService extends IService<StockDetail> {
      * @return
      */
     public List<ReagentStock> queryReagentStock();
+
+    /**
+     * 根据试剂ID查询剩余库存
+     * @param reagentId 试剂ID
+     * @return
+     */
+    public Long getReagentStockById(Integer reagentId);
 }

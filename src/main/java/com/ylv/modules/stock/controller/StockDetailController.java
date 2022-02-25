@@ -1,13 +1,14 @@
 package com.ylv.modules.stock.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ylv.modules.BaseController;
+import com.ylv.modules.stock.bean.StockDetail;
 import com.ylv.modules.stock.service.StockDetailService;
 import com.ylv.modules.stock.vo.ReagentStock;
+import com.ylv.util.Constants;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
@@ -28,7 +29,15 @@ public class StockDetailController extends BaseController {
 
     @GetMapping("query/{reagentId}")
     public Object query(@PathVariable Integer reagentId){
-        return  success();
+        QueryWrapper<StockDetail> query = new QueryWrapper<>();
+
+        if(reagentId != null) {
+            query.lambda().eq(StockDetail::getReagentId, reagentId);
+        }
+
+        List<StockDetail> list = stockDetailService.list(query);
+
+        return  success("查询成功",list);
     }
 
     /**
@@ -39,5 +48,24 @@ public class StockDetailController extends BaseController {
     public Object getReagentAndStock(){
         List<ReagentStock> stocks = stockDetailService.queryReagentStock();
         return success("查询成功",stocks);
+    }
+
+    /**
+     * 保存信息
+     * @param stockDetail
+     * @return
+     */
+    @PostMapping("save")
+    public Object save(@RequestBody StockDetail stockDetail){
+        //若是出库，需判断剩余库存
+        if(Constants.STOCK_TYPE_POP.equals(stockDetail.getStockType())) {
+            Long stock = stockDetailService.getReagentStockById(stockDetail.getReagentId());
+            if (stock != null && stock < stockDetail.getNum()) {
+                return error("出库失败！本试剂剩余库存为："+stockDetail.getNum()+"，小于出库数量："+stock);
+            }
+        }
+        stockDetailService.saveOrUpdate(stockDetail);
+
+        return success("保存成功");
     }
 }

@@ -3,6 +3,8 @@ CREATE TABLE `user_info`  (
   `id` int NOT NULL AUTO_INCREMENT COMMENT '物理主键',
   `name` varchar(100) NULL COMMENT '名称',
   `password` varchar(250) NULL COMMENT '密码',
+  `del_flg` varchar(10) null DEFAULT '1' COMMENT '删除标识，0为已删除，1为正常',
+  `create_time` timestamp(6) NULL DEFAULT CURRENT_TIMESTAMP() COMMENT '创建时间',
   PRIMARY KEY (`id`)
 );
 

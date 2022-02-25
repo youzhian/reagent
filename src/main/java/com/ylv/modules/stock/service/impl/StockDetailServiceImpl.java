@@ -30,7 +30,9 @@ public class StockDetailServiceImpl extends ServiceImpl<StockDetailMapper, Stock
     @Override
     public List<ReagentStock> queryReagentStock() {
 
-        List<ReagentInfo> reagentInfos = reagentInfoService.list(new QueryWrapper<ReagentInfo>().lambda().eq(ReagentInfo::getDelFlg, Constants.DEL_FLG_NORMAL));
+        List<ReagentInfo> reagentInfos = reagentInfoService.list(new QueryWrapper<ReagentInfo>().lambda()
+                .eq(ReagentInfo::getDelFlg, Constants.DEL_FLG_NORMAL)
+                .orderByAsc(ReagentInfo::getOrderNum).orderByDesc(ReagentInfo::getModifyOn));
 
         List<Integer> reagentIds = null;
 
@@ -57,7 +59,19 @@ public class StockDetailServiceImpl extends ServiceImpl<StockDetailMapper, Stock
                 rs.setStock(0);
 
                 if(detailMap.containsKey(key)){
-
+                    List<StockDetail> list = detailMap.get(key);
+                    if(list != null && !list.isEmpty()){
+                        //算出剩余库存
+                        int sum = list.stream().mapToInt(d->{
+                            //若是出库
+                            if(Constants.STOCK_TYPE_POP.equals(d.getStockType())){
+                                return -d.getNum();
+                            }else {
+                                return d.getNum();
+                            }
+                        }).sum();
+                        rs.setStock(sum);
+                    }
                 }
 
                 result.add(rs);
@@ -65,5 +79,27 @@ public class StockDetailServiceImpl extends ServiceImpl<StockDetailMapper, Stock
         }
 
         return result;
+    }
+
+    @Override
+    public Long getReagentStockById(Integer reagentId) {
+        if(reagentId != null) {
+            QueryWrapper<StockDetail> query = new QueryWrapper<>();
+            query.lambda().eq(StockDetail::getReagentId,reagentId);
+            List<StockDetail> list = list(query);
+            if(list != null && !list.isEmpty()){
+                //算出剩余库存
+                long sum = list.stream().mapToInt(d->{
+                    //若是出库
+                    if(Constants.STOCK_TYPE_POP.equals(d.getStockType())){
+                        return -d.getNum();
+                    }else {
+                        return d.getNum();
+                    }
+                }).sum();
+                return sum;
+            }
+        }
+        return null;
     }
 }

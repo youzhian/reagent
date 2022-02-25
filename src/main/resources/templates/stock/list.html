@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:include="include::head('试剂库存管理')">
-<head>
     <meta charset="UTF-8">
     <title>出库列表</title>
 </head>
@@ -13,10 +12,9 @@
     </el-row>
     </el-card>
     <el-card shadow="always">
-        <el-tabs tab-position="top"  v-model="activeName" @tab-click="tabClick">
-            <el-tab-pane v-for="(r,i) in reagents" :key="r.reagentId" :name="r.reagentId+''">
+        <el-tabs tab-position="top" v-model="activeName" @tab-click="tabClick">
+            <el-tab-pane v-for="(r,i) in reagents" :key="r.reagentId" :name="r.reagentId+''" :label="r.reagentName">
                 <span slot="label">{{r.reagentName}}  <el-badge :value="r.stock" :max="100" style="margin-top: 10px;"></el-badge></span>
-                <el-row v-if="activeName==r.reagentId+''">
                     <el-form :inline="true" :model="queryForm" class="demo-form-inline">
                         <el-form-item label="出入库">
                             <el-select v-model="queryForm.delFlg" placeholder="出入库">
@@ -29,7 +27,9 @@
                             <el-button type="primary" icon="el-icon-search">查询</el-button>
                         </el-form-item>
                     </el-form>
-
+                </el-row>
+                <el-row v-if="activeName==r.reagentId+''">
+                    <el-button type="primary" @click="toAdd" icon="el-icon-plus">增加出入库信息</el-button>
                 </el-row>
                 <el-card shadow="always">
                     <el-table
@@ -79,6 +79,30 @@
             </el-tab-pane>
         </el-tabs>
     </el-card>
+    <!--新增/编辑弹框-->
+    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" @close="dialogClose">
+        <el-form :model="dialogData" ref="forms" :rules="rules">
+            <el-form-item label="试剂名称" :label-width="formLabelWidth" prop="reagentName">
+                <el-input v-model="dialogData.reagentName" autocomplete="off" readonly></el-input>
+            </el-form-item>
+            <el-form-item label="出入库类型" :label-width="formLabelWidth" prop="stockType">
+                <el-radio v-model="dialogData.stockType" label="0">出库</el-radio>
+                <el-radio v-model="dialogData.stockType" label="1">入库</el-radio>
+            </el-form-item>
+            <el-form-item label="数量" :label-width="formLabelWidth" prop="num">
+                <el-input-number v-model="dialogData.num" :min="1" :max="1000" label="数量"></el-input-number>
+            </el-form-item>
+            <el-form-item label="操作人" :label-width="formLabelWidth" prop="operatorId">
+                <el-select v-model="dialogData.operatorId" filterable placeholder="请选择操作人">
+                    <el-option v-for="(r,i) in operator" :key="r.id+''" :label="r.name" :value="r.id+''"></el-option>
+                </el-select>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogCancel">取 消</el-button>
+            <el-button type="primary" @click="dialogSubmit">提 交</el-button>
+        </div>
+    </el-dialog>
 </div>
 </body>
 <script th:inline="javascript">
@@ -91,6 +115,7 @@
                 return {
                     reagents:[],
                     activeName:'',
+                    reagentName:'',
                     queryForm:{
 
                     },
@@ -105,10 +130,28 @@
                         operatorId:'',
                         createTime:'',
                     },
+                    dialogFormVisible:false,
+                    dialogTitle: '新增出入库信息',
+                    dialogData:{
+                        id:'',
+                        reagentId:'',
+                        reagentName:'',
+                        stockType:'0',
+                        num:'',
+                    },
+                    formLabelWidth: '120px',
+                    rules:{
+                        num:[{required: true, message: '请输入数量', trigger: 'blur'}],
+                        operatorId:[{required: true, message: '请选择操作人', trigger: 'blur'}],
+                        stockType:[{required: true, message: '请选择出入库类型', trigger: 'blur'}],
+
+                    },
+                    operator:[],
                 }
             },
         created: function(){
             let that = this;
+            that.queryUser();
             that.refresh();
 
         },
@@ -124,6 +167,7 @@
                             that.reagents = response.data.data;
                             if(that.reagents.length>0){
                                 that.activeName = that.reagents[0].reagentId+""
+                                that.reagentName = that.reagents[0].reagentName;
                             }
                         }
                     }).catch((error)=>{
@@ -135,6 +179,7 @@
             },
             tabClick:function(e){
                 console.log("tabClick",e)
+                this.reagentName = e.label;
             },
             formatStockType:function(row,column,cellValue){
                 return '';
@@ -142,9 +187,62 @@
             toDelete:function(index, row){
 
             },
-            indexMethod(index){
+            indexMethod:function(index){
 
                 return index+1;
+            },
+            toAdd:function(){
+                console.log("toAdd")
+                let that = this;
+                that.dialogFormVisible=true;
+                //默认出库
+                that.dialogData.stockType="0";
+                that.dialogData.reagentId = that.activeName;
+                that.dialogData.reagentName = that.reagentName;
+
+            },
+            dialogClose:function(){
+                let that = this;
+                that.$refs["forms"].resetFields();
+                //默认出库
+                that.dialogData.stockType="0";
+                that.dialogData.reagentId = '';
+                that.dialogData.reagentName = '';
+            },
+            dialogCancel:function(){
+                let that = this;
+                that.dialogFormVisible = false
+                that.$refs["forms"].resetFields();
+                //默认出库
+                that.dialogData.stockType="0";
+                that.dialogData.reagentId = '';
+                that.dialogData.reagentName = '';
+
+            },
+            dialogSubmit:function(){
+                let that = this;
+
+            },
+            queryUser:function(){
+                let that = this;
+                axios.post(ctp+"user/query",{"delFlg":"1"})
+                    .then((response)=>{
+                        let code = response.data.code;
+                        if(code == "200"){
+                            that.operator=response.data.data;
+                            console.log(that.operator);
+                        }else{
+                            that.$message({
+                                type: 'error',
+                                message: '获取操作人信息失败!'
+                            });
+                        }
+                    }).catch((error)=>{
+                    that.$message({
+                        type: 'error',
+                        message: '获取操作人信息失败!:'+error
+                    });
+                });
             },
         },
     });
