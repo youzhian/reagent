@@ -48,8 +48,10 @@ public class StockDetailServiceImpl extends ServiceImpl<StockDetailMapper, Stock
             Map<String,List<StockDetail>> detailMap = new HashMap<>();
             //出入库信息根据试剂进行分组
             if(details != null && !details.isEmpty()){
-                details.stream().collect(Collectors.groupingBy(StockDetail::getReagentId));
+                detailMap = details.stream().collect(Collectors.groupingBy(s->String.valueOf(s.getReagentId())));
             }
+
+            Map<String, List<StockDetail>> finalDetailMap = detailMap;
 
             reagentInfos.stream().forEach(s->{
                 String key = String.valueOf(s.getId());
@@ -58,8 +60,8 @@ public class StockDetailServiceImpl extends ServiceImpl<StockDetailMapper, Stock
                 rs.setReagentName(s.getReagentName());
                 rs.setStock(0);
 
-                if(detailMap.containsKey(key)){
-                    List<StockDetail> list = detailMap.get(key);
+                if(finalDetailMap.containsKey(key)){
+                    List<StockDetail> list = finalDetailMap.get(key);
                     if(list != null && !list.isEmpty()){
                         //算出剩余库存
                         int sum = list.stream().mapToInt(d->{

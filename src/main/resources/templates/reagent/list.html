@@ -147,7 +147,6 @@
         },
         methods: {
             toEdit(index, row) {
-                console.log(index, row);
                 let that = this;
                 that.dialogFormVisible=true;
                 that.dialogTitle = "编辑试剂信息";
@@ -183,10 +182,9 @@
                             //刷新列表
                             that.search();
                         }).catch((error)=>{
-                        let msg = response.data.msg;
                         that.$message({
                             type: 'error',
-                            message: '删除失败!:'+error
+                            message: '删除失败!'+error
                         });
                     });
                 });
@@ -219,7 +217,7 @@
                         }).catch((error)=>{
                             that.$message({
                                 type: 'error',
-                                message: '恢复失败!:'+error
+                                message: '恢复失败!'+error
                             });
                     });
                 });
@@ -251,13 +249,13 @@
                         let msg = response.data.msg
                         that.$message({
                             type: 'error',
-                            message: '查询异常！:'+msg
+                            message: '查询异常！'+msg
                         });
                     }
                 }).catch((error)=>{
                     that.$message({
                         type: 'error',
-                        message: '查询异常！:'+error
+                        message: '查询异常！'+error
                     });
                 })
             },
@@ -278,7 +276,6 @@
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
-                    console.log(that.dialogData)
                     axios.post(ctp+"reagent/save",that.dialogData)
                         .then((response)=>{
                             let code = response.data.code;

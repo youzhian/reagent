@@ -144,7 +144,6 @@
                             //刷新列表
                             that.search();
                         }).catch((error)=>{
-                        let msg = response.data.msg;
                         that.$message({
                             type: 'error',
                             message: '删除失败!:'+error

@@ -22,23 +22,6 @@
                         </div>
                     </el-col>
                     <el-col :span="10"><div class="grid-content bg-purple-light" style="text-align: center;"><h3>试剂库存信息管理系统</h3></div></el-col>
-                    <el-col :span="8" style="display: flex">
-                        <div class="grid-content bg-purple" style="margin-left: auto;">
-                            <div>
-                                <el-avatar icon="el-icon-user-solid"></el-avatar>
-                            </div>
-                            <el-dropdown>
-                              <span class="el-dropdown-link">
-                                你好，张三<i class="el-icon-arrow-down el-icon--right"></i>
-                              </span>
-                                <el-dropdown-menu slot="dropdown">
-                                    <el-dropdown-item>修改个人信息</el-dropdown-item>
-                                    <el-dropdown-item>修改密码</el-dropdown-item>
-                                    <el-dropdown-item>退出登录</el-dropdown-item>
-                                </el-dropdown-menu>
-                            </el-dropdown>
-                        </div>
-                    </el-col>
                 </el-row>
             </template>
         </el-header>
@@ -110,7 +93,6 @@
             handleClose(key, keyPath) {
             },
             addTab(data) {
-                console.log(data)
                 let tabName = data.id+"_"+data.menuKey;
                 let old = this.openedTabs[tabName];
                 if(!old){

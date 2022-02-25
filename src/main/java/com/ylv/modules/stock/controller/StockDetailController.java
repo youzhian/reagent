@@ -60,8 +60,8 @@ public class StockDetailController extends BaseController {
         //若是出库，需判断剩余库存
         if(Constants.STOCK_TYPE_POP.equals(stockDetail.getStockType())) {
             Long stock = stockDetailService.getReagentStockById(stockDetail.getReagentId());
-            if (stock != null && stock < stockDetail.getNum()) {
-                return error("出库失败！本试剂剩余库存为："+stockDetail.getNum()+"，小于出库数量："+stock);
+            if (stock == null || stock < stockDetail.getNum()) {
+                return error("出库失败！本试剂剩余库存为：" + (stock == null?0:stock) + "，小于出库数量：" + stockDetail.getNum());
             }
         }
         stockDetailService.saveOrUpdate(stockDetail);

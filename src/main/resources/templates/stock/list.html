@@ -90,10 +90,10 @@
                 <el-radio v-model="dialogData.stockType" label="1">入库</el-radio>
             </el-form-item>
             <el-form-item label="数量" :label-width="formLabelWidth" prop="num">
-                <el-input-number v-model="dialogData.num" :min="1" :max="1000" label="数量"></el-input-number>
+                <el-input-number v-model="dialogData.num" :min="1" :max="1000" :step="1" label="数量"></el-input-number>
             </el-form-item>
             <el-form-item label="操作人" :label-width="formLabelWidth" prop="operatorId">
-                <el-select v-model="dialogData.operatorId" filterable placeholder="请选择操作人">
+                <el-select v-model="dialogData.operatorId" filterable placeholder="请选择操作人" @change="operatorChang">
                     <el-option v-for="(r,i) in operator" :key="r.id+''" :label="r.name" :value="r.id+''"></el-option>
                 </el-select>
             </el-form-item>
@@ -147,6 +147,7 @@
 
                     },
                     operator:[],
+                    user:{},
                 }
             },
         created: function(){
@@ -158,14 +159,15 @@
         methods: {
 
             //刷新数据
-            refresh:function(){
+            refresh:function(reagentId){
                 let that = this;
                 axios.get(ctp+"stock/getStock")
                     .then((response)=>{
                         let code = response.data.code;
                         if(code == "200"){
                             that.reagents = response.data.data;
-                            if(that.reagents.length>0){
+                            if(that.reagents.length>0 && !reagentId){
+
                                 that.activeName = that.reagents[0].reagentId+""
                                 that.reagentName = that.reagents[0].reagentName;
                             }
@@ -173,12 +175,11 @@
                     }).catch((error)=>{
                     that.$message({
                         type: 'error',
-                        message: '查询失败!:'+error
+                        message: '查询失败!'+error
                     });
                 })
             },
             tabClick:function(e){
-                console.log("tabClick",e)
                 this.reagentName = e.label;
             },
             formatStockType:function(row,column,cellValue){
@@ -192,7 +193,6 @@
                 return index+1;
             },
             toAdd:function(){
-                console.log("toAdd")
                 let that = this;
                 that.dialogFormVisible=true;
                 //默认出库
@@ -221,7 +221,53 @@
             },
             dialogSubmit:function(){
                 let that = this;
+                let valResult = false;
+                that.$refs["forms"].validate((valid)=>{
+                    if(valid){
+                        valResult =  true;
+                    }
+                });
+                if(!valResult){
+                    return;
+                }
+                that.$confirm('确定要提交吗?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    that.dialogData.operatorName = that.user[that.dialogData.operatorId]
+                    axios.post(ctp + "stock/save", that.dialogData)
+                        .then((response)=>{
+                            let code = response.data.code;
+                            if(code == "200"){
+                                that.$message({
+                                    type: 'success',
+                                    message: '保存成功!'
+                                });
 
+                                that.dialogFormVisible = false
+                                that.$refs["forms"].resetFields();
+                                //默认出库
+                                that.dialogData.stockType="0";
+                                that.dialogData.reagentId = '';
+                                that.dialogData.reagentName = '';
+
+                                that.refresh(that.activeName);
+
+                            }else{
+                                let msg = response.data.msg;
+                                that.$message({
+                                    type: 'error',
+                                    message: '保存失败!'+msg
+                                });
+                            }
+                    }).catch((error)=>{
+                        that.$message({
+                            type: 'error',
+                            message: '保存失败!'+error
+                        });
+                    });
+                })
             },
             queryUser:function(){
                 let that = this;
@@ -230,7 +276,10 @@
                         let code = response.data.code;
                         if(code == "200"){
                             that.operator=response.data.data;
-                            console.log(that.operator);
+                            that.operator.forEach(e=>{
+                                that.user[e.id] = e.name;
+                            });
+
                         }else{
                             that.$message({
                                 type: 'error',
@@ -238,12 +287,15 @@
                             });
                         }
                     }).catch((error)=>{
-                    that.$message({
-                        type: 'error',
-                        message: '获取操作人信息失败!:'+error
-                    });
+                        that.$message({
+                            type: 'error',
+                            message: '获取操作人信息失败!'+error
+                        });
                 });
             },
+            operatorChang: function(e){
+                console.log(e);
+            }
         },
     });
 </script>
