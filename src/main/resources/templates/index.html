@@ -45,7 +45,7 @@
                 </el-menu>
             </el-aside>
             <el-main>
-                <el-tabs v-model="editableTabsValue" type="card" @tab-remove="removeTab">
+                <el-tabs ref="mainTabs" v-model="editableTabsValue" type="card" @tab-remove="removeTab">
                     <el-tab-pane
                             v-for="(item, index) in editableTabs"
                             :key="item.name"
@@ -68,26 +68,30 @@
 </style>
 <script th:inline="javascript">
 
-    var contentPath= /*[[@{/}]]*/ "/";
+    var path= /*[[@{/}]]*/ "/";
     new Vue({
         el: '#app',
         data: function() {
             return {
                 visible: false,
                 isCollapse: false,
-                editableTabsValue: '2',
+                editableTabsValue: 'home',
                 editableTabs: [{
                     title: "主页",
                     name: "home",
-                    content: "这里是首页",
+                    url: path+"home",
                     closable: false
                 }],
                 openedTabs:["home"],
-                tabIndex: 2,
+                tabIndex: 1,
                 menu: [[${menus}]]||{}
             }
         },
+        created(){
+
+        },
         methods:{
+
             handleOpen(key, keyPath) {
             },
             handleClose(key, keyPath) {
@@ -99,8 +103,8 @@
                     this.editableTabs.push({
                         title: data.name,
                         name: tabName,
-                        content: contentPath+data.url,
-                        url: contentPath+data.url,
+                        content: path+data.url,
+                        url: path+data.url,
                         closable: true
                     });
                     this.openedTabs[tabName]=1;

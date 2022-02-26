@@ -12,9 +12,13 @@
     </el-row>
     </el-card>
     <el-card shadow="always">
-        <el-tabs tab-position="top" v-model="activeName" @tab-click="tabClick">
+        <el-tabs tab-position="left" v-model="activeName" @tab-click="tabClick">
             <el-tab-pane v-for="(r,i) in reagents" :key="r.reagentId" :name="r.reagentId+''" :label="r.reagentName">
-                <span slot="label">{{r.reagentName}}  <el-badge :value="r.stock" :max="100" style="margin-top: 10px;"></el-badge></span>
+                <span slot="label">{{r.reagentName}}
+                    <el-tooltip :content="'剩余库存：'+r.stock" placement="top">
+                        <el-badge :value="r.stock" :max="100" style="margin-top: 10px;"></el-badge>
+                    </el-tooltip>
+                </span>
                     <el-form :inline="true" :model="queryForm" class="demo-form-inline">
                         <el-form-item label="出入库">
                             <el-select v-model="queryForm.delFlg" placeholder="出入库">
@@ -75,6 +79,11 @@
                             </template>
                         </el-table-column>
                     </el-table>
+                    <el-pagination
+                            background
+                            layout="prev, pager, next"
+                            :total="reagentTotal">
+                    </el-pagination>
                 </el-card>
             </el-tab-pane>
         </el-tabs>
@@ -148,6 +157,7 @@
                     },
                     operator:[],
                     user:{},
+                    reagentTotal:0,
                 }
             },
         created: function(){
@@ -203,20 +213,14 @@
             },
             dialogClose:function(){
                 let that = this;
-                that.$refs["forms"].resetFields();
-                //默认出库
-                that.dialogData.stockType="0";
-                that.dialogData.reagentId = '';
-                that.dialogData.reagentName = '';
+                //初始化
+                that.initData();
             },
             dialogCancel:function(){
                 let that = this;
                 that.dialogFormVisible = false
-                that.$refs["forms"].resetFields();
-                //默认出库
-                that.dialogData.stockType="0";
-                that.dialogData.reagentId = '';
-                that.dialogData.reagentName = '';
+                //初始化
+                that.initData();
 
             },
             dialogSubmit:function(){
@@ -246,11 +250,8 @@
                                 });
 
                                 that.dialogFormVisible = false
-                                that.$refs["forms"].resetFields();
-                                //默认出库
-                                that.dialogData.stockType="0";
-                                that.dialogData.reagentId = '';
-                                that.dialogData.reagentName = '';
+                                //初始化
+                                that.initData();
 
                                 that.refresh(that.activeName);
 
@@ -295,6 +296,14 @@
             },
             operatorChang: function(e){
                 console.log(e);
+            },
+            initData:function () {
+                let that = this;
+                that.$refs["forms"].resetFields();
+                //默认出库
+                that.dialogData.stockType="0";
+                that.dialogData.reagentId = '';
+                that.dialogData.reagentName = '';
             }
         },
     });

@@ -28,8 +28,14 @@ public class IndexController extends BaseController{
         return mv;
     }
 
-    @GetMapping("testElement")
-    public String testElement(){
-        return "testElementUI";
+    /**
+     * 主页
+     * @return
+     */
+    @GetMapping("home")
+    public ModelAndView toMain(){
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("home");
+        return mv;
     }
 }

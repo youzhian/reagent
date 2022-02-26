@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:include="include::head('首页')">
+    <meta charset="UTF-8"/>
+    <title>首页</title>
+</head>
+<body>
+<div id="app">
+    <el-card shadow="always">
+        <el-row>
+            <el-button type="primary" icon="el-icon-refresh-left" size="mini" round @click="refresh">刷新</el-button>
+        </el-row>
+    </el-card>
+    <el-card shadow="always">
+        <el-card shadow="always">
+        <el-row>
+            <el-button type="primary" @click="toAddReagent" icon="el-icon-plus">新增试剂信息</el-button>
+        </el-row>
+        </el-card>
+        <el-card shadow="always">
+        <el-table
+                :data="tableData"
+                stripe
+                border
+                style="width: 100%">
+            <el-table-column
+                    width="50px"
+                    align="center"
+                    label="序号"
+                    type="index"
+                    :index="indexMethod">
+            </el-table-column>
+            <el-table-column
+                    label="试剂名称"
+                    prop="reagentName">
+            </el-table-column>
+            <el-table-column
+                    label="剩余库存"
+                    prop="stock">
+            </el-table-column>
+            <el-table-column
+                    label="操作" width="300px">
+                <template slot-scope="scope">
+                    <el-button
+                            size="mini" type="primary"
+                            @click="toAdd(scope.$index, scope.row)" icon="el-icon-plus">增加出入库</el-button>
+                    <el-button
+                            size="mini" type="primary"
+                            @click="toDetail(scope.$index, scope.row)" icon="el-icon-search">出入库详情</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+        </el-card>
+        <!--新增/编辑弹框-->
+        <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" @close="dialogClose">
+            <el-form :model="dialogData" ref="forms" :rules="rules">
+                <el-form-item label="试剂名称" :label-width="formLabelWidth" prop="reagentName">
+                    <el-input v-model="dialogData.reagentName" autocomplete="off" readonly></el-input>
+                </el-form-item>
+                <el-form-item label="出入库类型" :label-width="formLabelWidth" prop="stockType">
+                    <el-radio v-model="dialogData.stockType" label="0">出库</el-radio>
+                    <el-radio v-model="dialogData.stockType" label="1">入库</el-radio>
+                </el-form-item>
+                <el-form-item label="数量" :label-width="formLabelWidth" prop="num">
+                    <el-input-number v-model="dialogData.num" :min="1" :max="1000" :step="1" label="数量"></el-input-number>
+                </el-form-item>
+                <el-form-item label="操作人" :label-width="formLabelWidth" prop="operatorId">
+                    <el-select v-model="dialogData.operatorId" filterable placeholder="请选择操作人" >
+                        <el-option v-for="(r,i) in operator" :key="r.id+''" :label="r.name" :value="r.id+''"></el-option>
+                    </el-select>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogCancel">取 消</el-button>
+                <el-button type="primary" @click="dialogSubmit">提 交</el-button>
+            </div>
+        </el-dialog>
+        <!--新增试剂弹出框-->
+        <el-dialog :title="dialogTitle2" :visible.sync="dialogFormVisible2" @close="dialogClose2">
+            <el-form :model="dialogData2" ref="forms2" :rules="rules2">
+                <el-form-item label="试剂名称" :label-width="formLabelWidth" prop="reagentName">
+                    <el-input v-model="dialogData2.reagentName" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="排序值" :label-width="formLabelWidth" prop="orderNum">
+                    <el-input-number v-model="dialogData2.orderNum" :min="1" :max="1000" label="排序值"></el-input-number>
+                </el-form-item>
+                <el-form-item label="描述" :label-width="formLabelWidth" prop="remark">
+                    <el-input type="textarea" v-model="dialogData2.remark"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogCancel2">取 消</el-button>
+                <el-button type="primary" @click="dialogSubmit2">提 交</el-button>
+            </div>
+        </el-dialog>
+    </el-card>
+</div>
+</body>
+<script th:inline="javascript">
+
+    var ctp= /*[[@{/}]]*/ "/";
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+
+                tableData: [],
+                dialogFormVisible: false,
+                dialogTitle: '',
+                formLabelWidth: '120px',
+                dialogData: {
+                    id:'',
+                    reagentId:'',
+                    reagentName:'',
+                    stockType:'0',
+                    num:'',
+                },
+                rules:{
+                    num:[{required: true, message: '请输入数量', trigger: 'blur'}],
+                    operatorId:[{required: true, message: '请选择操作人', trigger: 'blur'}],
+                    stockType:[{required: true, message: '请选择出入库类型', trigger: 'blur'}],
+                },
+                dialogFormVisible2: false,
+                dialogTitle2: '',
+                dialogData2: {
+                    id:'',
+                    reagentId:'',
+                    reagentName:'',
+                    stockType:'0',
+                    num:'',
+                },
+                rules2:{
+                    reagentName:[{required: true, message: '请输入试剂名', trigger: 'blur'}]
+                },
+                delFlg:{"0":"已删除","1":"正常"},
+                operator:[],
+                user:{},
+            }
+        },
+        created: function(){
+            console.log("created执行")
+            this.queryUser();
+            this.search();
+        },
+        methods: {
+            //刷新数据
+            refresh:function(reagentId){
+                this.queryUser();
+                this.search();
+            },
+            toAdd(index, row) {
+                let that = this;
+                that.dialogFormVisible = true;
+                that.dialogTitle = "入了出入库信息";
+
+                that.dialogData.reagentId = row.reagentId;
+                that.dialogData.reagentName = row.reagentName;
+
+            },
+            toAddReagent:function(){
+                let that = this;
+
+                that.dialogTitle2 = "新增试剂信息";
+                that.dialogData2.id = "";
+                that.dialogData2.orderNum = 1;
+                that.dialogData2.reagentName = "";
+                that.dialogData2.remark = "";
+
+                that.dialogFormVisible2=true;
+            },
+
+            indexMethod: function(index){
+
+                return index+1;
+            },
+
+            search(){
+                let that = this;
+                axios.get(ctp+"stock/getStock").then((response)=>{
+                    let code = response.data.code;
+                    if(code == "200"){
+                        that.tableData = response.data.data;
+                    }else{
+                        let msg = response.data.msg
+                        that.$message({
+                            type: 'error',
+                            message: '查询异常！'+msg
+                        });
+                    }
+                }).catch((error)=>{
+                    that.$message({
+                        type: 'error',
+                        message: '查询异常！'+error
+                    });
+                })
+            },
+            //弹出框提交按钮
+            dialogSubmit(){
+                let that = this;
+                let valResult = false;
+                that.$refs["forms"].validate((valid)=>{
+                    if(valid){
+                        valResult =  true;
+                    }
+                });
+                if(!valResult){
+                    return;
+                }
+                that.$confirm('确定要提交本次修改吗?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    that.dialogData.operatorName = that.user[that.dialogData.operatorId]
+                    axios.post(ctp + "stock/save", that.dialogData)
+                        .then((response)=>{
+                            let code = response.data.code;
+                            if(code == "200"){
+                                that.dialogFormVisible = false
+                                that.$message({
+                                    type: 'success',
+                                    message: '提交成功!'
+                                });
+                            }else{
+                                let msg = response.data.msg;
+                                that.$message({
+                                    type: 'error',
+                                    message: msg
+                                });
+                            }
+                            //刷新
+                            that.search();
+                        })
+                        .catch((error)=>{
+                            that.$message({
+                                type: 'error',
+                                message: error
+                            });
+                            //刷新
+                            that.search();
+                        })
+
+                }).catch((error) => {
+                    that.$message({
+                        type: 'info',
+                        message: error
+                    });
+                });
+
+            },
+            //弹出框取消按钮
+            dialogCancel(){
+                let that = this;
+                that.dialogFormVisible = false
+                that.$refs["forms"].resetFields();
+            },
+            dialogClose(){
+                let that = this;
+                that.$refs["forms"].resetFields();
+            },
+            formatDelFlg(row,column,cellValue){
+                let text = this.delFlg[cellValue];
+                if(!text){
+                    text = "-";
+                }
+                return text;
+            },
+            queryUser:function(){
+                let that = this;
+                axios.post(ctp+"user/query",{"delFlg":"1"})
+                    .then((response)=>{
+                        let code = response.data.code;
+                        if(code == "200"){
+                            that.operator=response.data.data;
+                            that.operator.forEach(e=>{
+                                that.user[e.id] = e.name;
+                            });
+
+                        }else{
+                            that.$message({
+                                type: 'error',
+                                message: '获取操作人信息失败!'
+                            });
+                        }
+                    }).catch((error)=>{
+                    that.$message({
+                        type: 'error',
+                        message: '获取操作人信息失败!'+error
+                    });
+                });
+            },
+            //弹出框提交按钮
+            dialogSubmit2(){
+                let that = this;
+                let valResult = false;
+                that.$refs["forms2"].validate((valid)=>{
+                    if(valid){
+                        valResult =  true;
+                    }
+                });
+                if(!valResult){
+                    return;
+                }
+                that.$confirm('确定要提交本次修改吗?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    axios.post(ctp+"reagent/save",that.dialogData2)
+                        .then((response)=>{
+                            let code = response.data.code;
+                            if(code == "200"){
+                                that.dialogFormVisible2 = false
+                                that.$message({
+                                    type: 'success',
+                                    message: '提交成功!'
+                                });
+                            }else{
+                                let msg = response.data.msg;
+                                that.$message({
+                                    type: 'error',
+                                    message: msg
+                                });
+                            }
+                            //刷新
+                            that.search();
+                        })
+                        .catch((error)=>{
+                            that.$message({
+                                type: 'error',
+                                message: error
+                            });
+                            //刷新
+                            that.search();
+                        })
+
+                }).catch((error) => {
+                    that.$message({
+                        type: 'info',
+                        message: error
+                    });
+                });
+
+            },
+            //弹出框取消按钮
+            dialogCancel2(){
+                let that = this;
+                that.dialogFormVisible2 = false
+                that.$refs["forms2"].resetFields();
+            },
+            dialogClose2(){
+                let that = this;
+                that.$refs["forms2"].resetFields();
+            },
+        },
+    });
+</script>
+</html>
