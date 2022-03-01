@@ -1,5 +1,6 @@
 package com.ylv.modules.reagent.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ylv.modules.reagent.bean.ReagentInfo;
 
@@ -27,7 +28,7 @@ public interface ReagentInfoService extends IService<ReagentInfo> {
      * @param reagentInfo 查询条件，主要是名称和状态
      * @return
      */
-    public List<ReagentInfo> list(ReagentInfo reagentInfo);
+    public IPage<ReagentInfo> list(ReagentInfo reagentInfo, Integer pageSize, Integer pageNum);
 
     /**
      * 对数据进行逻辑删除

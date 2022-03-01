@@ -13,4 +13,8 @@ public class Constants {
      * 入库
      */
     public static String STOCK_TYPE_PUSH = "1";
+    /**
+     * 试剂类型字典type
+     */
+    public static String REAGENT_TYPE = "REAGENT_TYPE";
 }

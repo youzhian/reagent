@@ -8,16 +8,25 @@
 <div id="app">
     <el-card shadow="always">
     <el-form :inline="true" :model="queryForm" class="demo-form-inline">
+        <el-form-item label="试剂分类">
+            <el-select v-model="queryForm.reagentType" placeholder="试剂分类" style="width:180px;">
+                <el-option label="全部" value="" selected></el-option>
+                <el-option v-for="(r,i) in reagentType" :label="r.dictValue" :value="r.dictCode" ></el-option>
+            </el-select>
+            <el-tooltip content="添加试剂类型" placement="top">
+            <el-link type="primary" icon="el-icon-circle-plus-outline" @click="toAddReagent"></el-link>
+            </el-tooltip>
+        </el-form-item>
         <el-form-item label="试剂名称">
-            <el-input v-model="queryForm.reagentName" placeholder="试剂名称"></el-input>
+            <el-input v-model="queryForm.reagentName" placeholder="试剂名称" ></el-input>
         </el-form-item>
         <el-form-item label="录入人">
-            <el-input v-model="queryForm.createBy" placeholder="录入人"></el-input>
+            <el-input v-model="queryForm.createBy" placeholder="录入人" style="width: 180px"></el-input>
         </el-form-item>
-        <el-form-item label="状态">
-            <el-select v-model="queryForm.delFlg" placeholder="状态">
+        <el-form-item label="状态" >
+            <el-select v-model="queryForm.delFlg" placeholder="状态" style="width:90px;">
                 <el-option label="全部" value=""></el-option>
-                <el-option label="正常" value="1" selected></el-option>
+                <el-option label="正常" value="1"></el-option>
                 <el-option label="删除" value="0"></el-option>
             </el-select>
         </el-form-item>
@@ -42,6 +51,12 @@
                 :index="indexMethod">
         </el-table-column>
         <el-table-column
+                label="试剂分类"
+                prop="reagentType"
+                width="100px"
+                :formatter="formatReagentType">
+        </el-table-column>
+        <el-table-column
                 label="试剂名称"
                 prop="reagentName">
         </el-table-column>
@@ -52,30 +67,23 @@
         <el-table-column
                 label="状态"
                 prop="delFlg"
+                width="70px"
                 :formatter="formatDelFlg">
         </el-table-column>
         <el-table-column
                 label="排序值"
-                prop="orderNum">
+                prop="orderNum" width="70px">
         </el-table-column>
         <el-table-column
                 label="创建时间"
                 prop="createOn">
         </el-table-column>
         <el-table-column
-                label="创建人"
-                prop="createBy">
-        </el-table-column>
-        <el-table-column
                 label="修改时间"
                 prop="modifyOn">
         </el-table-column>
         <el-table-column
-                label="修改人"
-                prop="modifyBy">
-        </el-table-column>
-        <el-table-column
-                label="操作" width="200px">
+                label="操作" width="190px">
 
             <template slot-scope="scope">
                 <el-button
@@ -92,9 +100,28 @@
             </template>
         </el-table-column>
     </el-table>
+    <el-card shadow="always">
+        <el-pagination
+            background
+            @size-change="sizeChange"
+            @current-change="currentChange"
+            @prev-click="prevClick"
+            @next-click="nextClick"
+            layout="prev, pager, next,sizes,total"
+            :total="total"
+            :page-sizes="[10,15,20,30]"
+            :page-size="queryForm.pageSize"
+            :current-page="queryForm.pageNum">
+        </el-pagination>
+    </el-card>
     <!--新增/编辑弹框-->
     <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" @close="dialogClose">
         <el-form :model="dialogData" ref="forms" :rules="rules">
+            <el-form-item label="试剂分类" :label-width="formLabelWidth" prop="reagentType">
+                <el-select v-model="dialogData.reagentType" placeholder="试剂分类">
+                    <el-option v-for="(t,i) in reagentType" :label="t.dictValue" :value="t.dictCode" ></el-option>
+                </el-select>
+            </el-form-item>
             <el-form-item label="试剂名称" :label-width="formLabelWidth" prop="reagentName">
                 <el-input v-model="dialogData.reagentName" autocomplete="off"></el-input>
             </el-form-item>
@@ -110,6 +137,27 @@
             <el-button type="primary" @click="dialogSubmit">提 交</el-button>
         </div>
     </el-dialog>
+    <!--新增试剂分类-->
+    <el-dialog :title="dialogTitle2" :visible.sync="dialogFormVisible2" @close="dialogClose2">
+        <el-form :model="dialogData2" ref="forms2" :rules="rules2">
+            <el-form-item label="试剂分类代码" :label-width="formLabelWidth" prop="dictCode">
+                <el-input v-model="dialogData2.dictCode" autocomplete="off" label="试剂分类的唯一标识"></el-input>
+            </el-form-item>
+            <el-form-item label="试剂分类名称" :label-width="formLabelWidth" prop="dictValue">
+                <el-input v-model="dialogData2.dictValue" autocomplete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="排序值" :label-width="formLabelWidth" prop="orderNum">
+                <el-input-number v-model="dialogData2.orderNum" :min="1" :max="1000" label="排序值"></el-input-number>
+            </el-form-item>
+            <el-form-item label="描述" :label-width="formLabelWidth" prop="dictRemark">
+                <el-input type="textarea" v-model="dialogData2.dictRemark"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogCancel2">取 消</el-button>
+            <el-button type="primary" @click="dialogSubmit2">提 交</el-button>
+        </div>
+    </el-dialog>
     </el-card>
 </div>
 </body>
@@ -121,9 +169,12 @@
         data: function () {
             return {
                 queryForm: {
+                    reagentType:'',
                     reagentName: '',
                     delFlg: '1',
                     createBy:'',
+                    pageSize:10,
+                    pageNum:1,
                 },
                 tableData: [],
                 dialogFormVisible: false,
@@ -134,15 +185,38 @@
                     reagentName:'',
                     orderNum:'',
                     remark:'',
+                    reagentType:'',
                 },
                 rules:{
-                  reagentName:[{required: true, message: '请输入试剂名', trigger: 'blur'}]
+                    reagentName:[{required: true, message: '请输入试剂名', trigger: 'blur'}],
+                    reagentType:[{required:true,message:'请选择试剂分类',trigger:'blur'}]
                 },
-                delFlg:{"0":"已删除","1":"正常"}
+                dialogFormVisible2: false,
+                dialogTitle2: '',
+                formLabelWidth2: '120px',
+                dialogData2: {
+                    id:'',
+                    dictCode:'',
+                    dictValue:'',
+                    orderNum:'',
+                    dictRemark:'',
+                },
+                rules2:{
+                    dictCode:[
+                        {required: true, message: '请输入试剂分类代码', trigger: 'blur'},
+                    ],
+                    dictValue:[{required: true, message: '请输入试剂分类名', trigger: 'blur'},]
+                },
+                delFlg:{"0":"已删除","1":"正常"},
+                reagentType:[],
+                reagentTypeMap:[],
+                total:0,
+                pageSize:10,
             }
         },
         created: function(){
             console.log("created执行")
+            this.queryReagentType();
             this.search();
         },
         methods: {
@@ -155,6 +229,7 @@
                 that.dialogData.reagentName = row.reagentName;
                 that.dialogData.remark = row.remark;
                 that.dialogData.orderNum = row.orderNum;
+                that.dialogData.reagentType = row.reagentType;
             },
             toDelete(index, row) {
                 let that = this;
@@ -235,16 +310,24 @@
                 that.dialogData.orderNum = 1;
                 that.dialogData.reagentName = "";
                 that.dialogData.remark = "";
+                that.dialogData.reagentType="";
 
                 that.dialogFormVisible=true;
 
             },
-            search(){
+            search(flg){
+
                 let that = this;
+                if(!flg){
+                    that.queryForm.pageNum = 1;
+                }
                 axios.post(ctp+"reagent/query",that.queryForm).then((response)=>{
                     let code = response.data.code;
                     if(code == "200"){
-                        that.tableData = response.data.data;
+                        that.tableData = response.data.data.records;
+                        that.total = response.data.data.total;
+                        that.queryForm.pageSize = response.data.data.size;
+                        that.queryForm.pageNum = response.data.data.current;
                     }else{
                         let msg = response.data.msg
                         that.$message({
@@ -310,7 +393,6 @@
                         message: error
                     });
                 });
-
             },
             //弹出框取消按钮
             dialogCancel(){
@@ -322,12 +404,148 @@
                 let that = this;
                 that.$refs["forms"].resetFields();
             },
+            dialogClose2(){
+                let that = this;
+                that.$refs["forms2"].resetFields();
+                that.queryReagentType();
+            },
+            //弹出框取消按钮
+            dialogCancel2(){
+                let that = this;
+                that.dialogFormVisible2 = false
+                that.$refs["forms2"].resetFields();
+
+            },
+            //弹出框提交按钮
+            dialogSubmit2(){
+                let that = this;
+                let valResult = false;
+                that.$refs["forms2"].validate((valid)=>{
+                    if(valid){
+                        valResult =  true;
+                    }
+                });
+                if(!valResult){
+                    return;
+                }
+                that.$confirm('确定要提交本次修改吗?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    axios.post(ctp+"reagent/addReagentTye",that.dialogData2)
+                        .then((response)=>{
+                            let code = response.data.code;
+                            if(code == "200"){
+                                that.dialogFormVisible2 = false
+                                that.$message({
+                                    type: 'success',
+                                    message: '提交成功!'
+                                });
+                            }else{
+                                let msg = response.data.msg;
+                                that.$message({
+                                    type: 'error',
+                                    message: msg
+                                });
+                            }
+                            //刷新
+                            that.search();
+                        })
+                        .catch((error)=>{
+                            that.$message({
+                                type: 'error',
+                                message: error
+                            });
+                            //刷新
+                            that.search();
+                        })
+
+                }).catch((error) => {
+                    that.$message({
+                        type: 'info',
+                        message: error
+                    });
+                });
+            },
+            toAddReagent:function(){
+                let that = this;
+
+                that.dialogTitle2 = "新增试剂分类";
+                that.dialogData2.id = "";
+                that.dialogData2.orderNum = 1;
+                that.dialogData2.dictValue = "";
+                that.dialogData2.dictCode = "";
+                that.dialogData2.dictRemark = "";
+
+                that.dialogFormVisible2=true;
+            },
             formatDelFlg(row,column,cellValue){
                 let text = this.delFlg[cellValue];
                 if(!text){
                     text = "-";
                 }
                 return text;
+            },
+            formatReagentType:function(row,column,cellValue){
+                let that = this;
+                let key = cellValue;
+                let text = that.reagentTypeMap[key];
+                if(!text){
+                    text = "未分组";
+                }
+                return text;
+
+            },
+            queryReagentType:function () {
+                let that = this;
+                axios.get(ctp+"reagent/queryReagentType",that.queryForm)
+                    .then((response)=>{
+                        let code = response.data.code;
+                        if(code == "200"){
+                            that.reagentType = response.data.data;
+                            that.reagentType.forEach(e=>{
+                                that.reagentTypeMap[e.dictCode] = e.dictValue
+                            });
+
+                        }else{
+                            let msg = response.data.msg
+                            that.$message({
+                                type: 'error',
+                                message: '查询异常！'+msg
+                            });
+                        }
+                }).catch((error)=>{
+                    that.$message({
+                        type: 'error',
+                        message: '查询异常！'+error
+                    });
+                })
+            },
+            sizeChange:function(e){
+                console.log("sizeChange",e)
+                let that = this
+                that.queryForm.pageSize = e;
+                that.search("1");
+            },
+            currentChange:function(e){
+                console.log("currentPage",e)
+                let that = this;
+                that.queryForm.pageNum = e;
+                that.search("1");
+
+            },
+            prevClick:function(e){
+                console.log("prevClick",e)
+                let that = this;
+                that.queryForm.pageNum = e;
+                that.search("1");
+            },
+            nextClick:function(e){
+                console.log("nextClick",e)
+                let that = this;
+                that.queryForm.pageNum = e;
+                that.search("1");
             },
         },
     });

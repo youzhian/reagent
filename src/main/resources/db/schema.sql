@@ -13,6 +13,7 @@ CREATE TABLE `reagent_info`  (
   `id` int NOT NULL AUTO_INCREMENT COMMENT '物理主键',
   `reagent_name` varchar(255) NOT NULL COMMENT '试剂名称',
   `del_flg` varchar(10) NULL DEFAULT 1 COMMENT '删除标识，0为已删除，1为未删除',
+  `reagent_type` varchar(60) NULL COMMENT '试剂类型，对应字典为reagent_type',
   `remark` varchar(255) NULL COMMENT '描述',
   `order_num` int NULL DEFAULT NULL COMMENT '排序',
   `create_on` timestamp(6) NULL DEFAULT CURRENT_TIMESTAMP() COMMENT '创建时间',
@@ -37,9 +38,9 @@ CREATE TABLE `stock_detail`  (
 -- 字典类型
 CREATE TABLE `dict_type`  (
   `id` int NOT NULL AUTO_INCREMENT COMMENT '物理主键',
-  `name` varchar(50)  NULL DEFAULT NULL COMMENT '字典类型显示名称',
-  `dic_type` varchar(50)  NOT NULL COMMENT '字典类型',
-  `dic_desc` varchar(100)  NULL DEFAULT NULL COMMENT '字典类型描述',
+  `label` varchar(50)  NULL DEFAULT NULL COMMENT '字典类型显示名称',
+  `dict_type` varchar(50)  NOT NULL COMMENT '字典类型',
+  `dict_desc` varchar(100)  NULL DEFAULT NULL COMMENT '字典类型描述',
   `order_num` int NULL DEFAULT NULL COMMENT '排序',
   `create_time` timestamp(6) NULL DEFAULT CURRENT_TIMESTAMP() COMMENT '创建时间',
   `update_time` timestamp(6) NULL DEFAULT NULL COMMENT '修改时间',
@@ -48,7 +49,7 @@ CREATE TABLE `dict_type`  (
 -- 字典信息
 CREATE TABLE `dict_info`  (
   `id` int NOT NULL AUTO_INCREMENT COMMENT '物理主键',
-  `dict_name` varchar(60)  NULL DEFAULT NULL COMMENT '字典显示名称',
+  `dict_code` varchar(60)  NULL DEFAULT NULL COMMENT '字典显示名称',
   `dict_value` varchar(60)  NOT NULL COMMENT '字典值',
   `dict_type` varchar(50)  NOT NULL COMMENT '字典类型',
   `order_num` int NULL DEFAULT NULL COMMENT '字典排序',

@@ -1,6 +1,8 @@
 package com.ylv.modules.reagent.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ylv.modules.reagent.bean.ReagentInfo;
 import com.ylv.modules.reagent.mapper.ReagentInfoMapper;
@@ -55,7 +57,7 @@ public class ReagentInfoServiceImpl extends ServiceImpl<ReagentInfoMapper,Reagen
     }
 
     @Override
-    public List<ReagentInfo> list(ReagentInfo reagentInfo) {
+    public IPage<ReagentInfo> list(ReagentInfo reagentInfo,Integer pageSize,Integer pageNum) {
 
         QueryWrapper<ReagentInfo> query = new QueryWrapper();
 
@@ -65,6 +67,9 @@ public class ReagentInfoServiceImpl extends ServiceImpl<ReagentInfoMapper,Reagen
         if(StringUtils.isNotBlank(reagentInfo.getDelFlg())) {
             query.lambda().eq(ReagentInfo::getDelFlg,reagentInfo.getDelFlg());
         }
+        if(StringUtils.isNotBlank(reagentInfo.getReagentType())){
+            query.lambda().eq(ReagentInfo::getReagentType,reagentInfo.getReagentType());
+        }
         if(StringUtils.isNotBlank(reagentInfo.getCreateBy())) {
             query.lambda().eq(ReagentInfo::getCreateBy,reagentInfo.getCreateBy());
         }
@@ -72,10 +77,11 @@ public class ReagentInfoServiceImpl extends ServiceImpl<ReagentInfoMapper,Reagen
             query.lambda().eq(ReagentInfo::getModifyBy,reagentInfo.getModifyBy());
         }
 
-        query.lambda().orderByDesc(ReagentInfo::getDelFlg).orderByAsc(ReagentInfo::getOrderNum).orderByDesc(ReagentInfo::getModifyOn);
-
-        List<ReagentInfo> list = reagentInfoMapper.selectList(query);
-        return list;
+        query.lambda().orderByDesc(ReagentInfo::getDelFlg).orderByAsc(ReagentInfo::getReagentType)
+                .orderByAsc(ReagentInfo::getOrderNum).orderByDesc(ReagentInfo::getModifyOn);
+        IPage<ReagentInfo> page = new Page<>(pageNum,pageSize);
+        IPage<ReagentInfo> result = reagentInfoMapper.selectPage(page,query);
+        return result;
     }
 
     @Override

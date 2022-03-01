@@ -35,6 +35,9 @@
                 <el-row v-if="activeName==r.reagentId+''">
                     <el-button type="primary" @click="toAdd" icon="el-icon-plus">增加出入库信息</el-button>
                 </el-row>
+                <el-row>
+                    <el-button type="primary" @click="toAdd" icon="el-icon-plus">新增</el-button>
+                </el-row>
                 <el-card shadow="always">
                     <el-table
                             :data="tableData"
@@ -190,10 +193,18 @@
                 })
             },
             tabClick:function(e){
+                let that = this;
                 this.reagentName = e.label;
+                console.log(e)
+                console.log(e.name)
+                console.log("activeName",this.activeName)
+
             },
             formatStockType:function(row,column,cellValue){
                 return '';
+            },
+            toAdd:function(){
+
             },
             toDelete:function(index, row){
 

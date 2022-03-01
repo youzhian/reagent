@@ -20,7 +20,8 @@
         <el-card shadow="always">
         <el-table
                 :data="tableData"
-                stripe
+                :row-class-name="tableRowClassName"
+
                 border
                 style="width: 100%">
             <el-table-column
@@ -96,6 +97,11 @@
     </el-card>
 </div>
 </body>
+<style>
+    .el-table .warning-row {
+        background: oldlace;
+    }
+</style>
 <script th:inline="javascript">
 
     var ctp= /*[[@{/}]]*/ "/";
@@ -147,6 +153,11 @@
             refresh:function(reagentId){
                 this.queryUser();
                 this.search();
+            },
+            tableRowClassName({row, rowIndex}) {
+                if (row.stock == 0) {
+                    return 'warning-row';
+                }
             },
             toAdd(index, row) {
                 let that = this;

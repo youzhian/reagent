@@ -33,6 +33,10 @@ public class ReagentInfo {
      */
     private String remark;
     /**
+     * 试剂类型
+     */
+    private String reagentType;
+    /**
      * 数据创建时间
      */
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
